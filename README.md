@@ -154,7 +154,7 @@ helmet_detection/
 
 ## ⚠️ Disclaimer
 
-This application is for educational and informational purposes only. It should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for medical concerns.
+This project is developed for **educational and research purposes only**. It uses publicly available datasets from Roboflow and is provided "as is" without any warranties or guarantees of accuracy. Users are responsible for ensuring compliance with all applicable laws, regulations, and privacy requirements when processing images/videos. The developers are not liable for any misuse or damages arising from the use of this system. **Important**: Always verify detection results manually in critical safety applications - this system should not be the sole method for safety compliance monitoring.
 
 ## 📄 License
 
