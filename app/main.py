@@ -117,8 +117,10 @@ else:
 
             # Check if output file exists and has content
             if os.path.exists(output_video_path) and os.path.getsize(output_video_path) > 0:
-                # Display video
-                st.video(output_video_path)
+                # Read video as bytes for better compatibility
+                with open(output_video_path, "rb") as video_file:
+                    video_bytes = video_file.read()
+                st.video(video_bytes)
             else:
                 st.error("Output video file not created properly")
 
