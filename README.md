@@ -57,7 +57,7 @@ Upload an image → Get instant helmet detection results with bounding boxes
 
 ### Dataset Source
 
-This project uses a **public helmet detection dataset** sourced from **[Roboflow](https://roboflow.com/)**:
+This project uses a **public helmet detection dataset** sourced from **[Roboflow](https://roboflow.com/zeel-patel/helmet-detection-w1r9b-f1dwo/3)**:
 
 - 📦 **Dataset Type**: Public Computer Vision Dataset
 - 🏷️ **Classes**: Helmet detection (with/without helmet)
