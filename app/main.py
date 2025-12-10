@@ -4,6 +4,7 @@ import cv2
 from PIL import Image
 import numpy as np
 import os
+import tempfile
 
 st.set_page_config(page_title="Helmet Detection", layout="centered")
 st.title("Helmet Detection System")
@@ -50,53 +51,63 @@ else:
     )
 
     if uploaded_video is not None:
+        # Use tempfile for cloud compatibility
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_input:
+            tmp_input.write(uploaded_video.read())
+            input_video_path = tmp_input.name
 
-        if "run_id" not in st.session_state:
-            st.session_state.run_id = 0
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_output:
+            output_video_path = tmp_output.name
 
-        output_video_path = f"output_video_{st.session_state.run_id}.mp4"
+        try:
+            # Processing
+            with st.spinner("Processing Video..."):
+                cap = cv2.VideoCapture(input_video_path)
+                fps = cap.get(cv2.CAP_PROP_FPS)
+                w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        # Save input
-        input_video_path = "temp_input.mp4"
-        with open(input_video_path, "wb") as f:
-            f.write(uploaded_video.read())
+                # Use mp4v codec for better compatibility
+                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+                out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
 
-        # Processing
-        with st.spinner("Processing Video..."):
-            cap = cv2.VideoCapture(input_video_path)
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                progress = st.progress(0)
+                i = 0
 
-            fourcc = cv2.VideoWriter_fourcc(*"avc1")
-            out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
+                while True:
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
 
-            total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            progress = st.progress(0)
-            i = 0
+                    result = model(frame, conf=conf_threshold, verbose=False)[0]
+                    annotated = result.plot()
+                    out.write(annotated)
 
-            while True:
-                ret, frame = cap.read()
-                if not ret:
-                    break
+                    i += 1
+                    if total > 0:
+                        progress.progress(i / total)
 
-                result = model(frame, conf=conf_threshold, verbose=False)[0]
-                annotated = result.plot()
-                out.write(annotated)
+                cap.release()
+                out.release()
 
-                i += 1
-                if total > 0:
-                    progress.progress(i / total)
+            progress.empty()
+            st.success("Processing complete!")
 
-            cap.release()
-            out.release()
+            # Read the output video as bytes and display
+            with open(output_video_path, 'rb') as video_file:
+                video_bytes = video_file.read()
+                st.video(video_bytes)
 
-            os.remove(input_video_path)
-
-        progress.empty()
-        st.success("Processing complete!")
-
-        # ⬇⬇⬇ THE MAGIC FIX ⬇⬇⬇
-        st.video(output_video_path)  # ← bytes NOT needed, path works 100%
-
-        st.session_state.run_id += 1
+        except Exception as e:
+            st.error(f"Error processing video: {str(e)}")
+        
+        finally:
+            # Cleanup temporary files
+            try:
+                if os.path.exists(input_video_path):
+                    os.remove(input_video_path)
+                if os.path.exists(output_video_path):
+                    os.remove(output_video_path)
+            except:
+                pass
