@@ -47,55 +47,11 @@ This **Helmet Detection System** uses state-of-the-art YOLO (You Only Look Once)
 
 This project uses a **public helmet detection dataset** sourced from **[Roboflow](https://universe.roboflow.com/varad-codemonk-tata/helmet-detection-w1r9b)**:
 
-- 📦 **Dataset Type**: Public Computer Vision Dataset
-- 🏷️ **Classes**: Helmet detection (with/without helmet)
-- 📸 **Format**: Annotated images with bounding boxes
-- 🔗 **Source**: Roboflow Universe - Public Datasets
-- ✅ **License**: Public Domain / Open Source
-
-### Training Platforms
-
-The YOLO models were **custom trained** using cloud-based platforms:
-
-#### 🔬 **Kaggle Notebooks**
-- Free GPU/TPU access for training
-- Used for YOLOv8s model training
-- Training time: ~2-4 hours on GPU
-- [Kaggle](https://www.kaggle.com/) - Free tier with 30 hours/week GPU
-
-#### 🧪 **Google Colab**
-- Free cloud-based Jupyter notebooks
-- Used for YOLOv11s model training
-- Training time: ~2-4 hours on GPU
-- [Google Colab](https://colab.research.google.com/) - Free tier with GPU access
-
-### Training Process
-
-1. **Data Preparation**:
-   - Downloaded dataset from Roboflow
-   - Preprocessed and augmented images
-   - Split into train/validation/test sets
-
-2. **Model Training**:
-   - Fine-tuned YOLOv8s and YOLOv11s on helmet dataset
-   - Used transfer learning from pre-trained COCO weights
-   - Optimized hyperparameters for best performance
-
-3. **Evaluation**:
-   - Validated on test set
-   - Achieved high mAP (mean Average Precision)
-   - Optimized for real-time inference
-
-### Training Configuration
-
-```yaml
-Epochs: 100-150
-Batch Size: 16-32
-Image Size: 640x640
-Optimizer: AdamW
-Learning Rate: 0.001
-Augmentation: Yes (rotation, flip, brightness, contrast)
-```
+- **Dataset Type**: Public Computer Vision Dataset
+- **Classes**: Helmet detection (with/without helmet)
+- **Format**: Annotated images with bounding boxes
+- **Source**: Roboflow Universe - Public Datasets
+- **License**: Public Domain / Open Source
 
 ---
 
