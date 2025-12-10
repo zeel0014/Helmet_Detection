@@ -143,12 +143,6 @@ helmet_detection/
 
 ---
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
 ## 🙏 Acknowledgments
 
 - **[Roboflow](https://roboflow.com/)** for providing the public helmet detection dataset
@@ -161,20 +155,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📧 Contact
 
-For questions, suggestions, or issues:
+## ⚠️ Disclaimer
 
-**Developed by**: [@zeel0014](https://github.com/zeel0014)  
-**GitHub Repository**: [Multiple-Disease-Prediction](https://github.com/zeel0014/Multiple-Disease-Prediction)
-- **Email**: zeel2659@gmail.com
+This application is for educational and informational purposes only. It should not be used as a substitute for professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for medical concerns.
+
+## 📄 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-<div align="center">
+**Developed by**: [@zeel0014](https://github.com/zeel0014)  
+**GitHub Repository**: [Multiple-Disease-Prediction](https://github.com/zeel0014/Helmet_Detection)  
+**Live Demo**: [Hugging Face Space](https://huggingface.co/spaces/zeel0014/Multiple_Disease_Prediction)
 
-### ⭐ Star this repository if you find it helpful!
+---
 
-Made with ❤️ using Python & YOLO
-
-</div>
+⭐ **If you find this project helpful, please consider giving it a star!**
