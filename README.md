@@ -143,91 +143,6 @@ helmet_detection/
 
 ---
 
-## 🤖 Model Information
-
-### YOLOv8s (Custom Trained)
-- **Architecture**: YOLOv8 Small
-- **Size**: ~22.5 MB
-- **Training Platform**: Kaggle Notebooks
-- **Dataset**: Roboflow Public Dataset
-- **Speed**: Fast inference (~30-50 FPS on GPU)
-- **Accuracy**: High precision for helmet detection
-- **Base Weights**: COCO pre-trained
-- **Fine-tuning**: Custom trained on helmet dataset
-
-### YOLOv11s (Custom Trained)
-- **Architecture**: YOLOv11 Small
-- **Size**: ~19.2 MB
-- **Training Platform**: Google Colab
-- **Dataset**: Roboflow Public Dataset
-- **Speed**: Optimized for speed (~40-60 FPS on GPU)
-- **Accuracy**: Latest YOLO improvements with enhanced detection
-- **Base Weights**: COCO pre-trained
-- **Fine-tuning**: Custom trained on helmet dataset
-
-### Model Performance
-
-Both models are **custom trained** specifically for helmet detection using:
-- ✅ Public dataset from Roboflow
-- ✅ Transfer learning from COCO weights
-- ✅ Cloud-based training (Kaggle & Google Colab)
-- ✅ Optimized for real-time performance
-- ✅ High accuracy on helmet detection tasks
-
----
-
-## 🌐 Deployment
-
-### Deploy to Streamlit Cloud (FREE)
-
-1. **Push your code to GitHub**
-2. **Go to**: [share.streamlit.io](https://share.streamlit.io)
-3. **Sign in** with GitHub
-4. **Click "New app"**
-5. **Fill in the details:**
-   - Repository: `yourusername/helmet_detection`
-   - Branch: `main`
-   - Main file path: `app/main.py`
-6. **Click "Deploy"**
-7. **Share your app URL** (e.g., `yourapp.streamlit.app`)
-
-### Deploy to Hugging Face Spaces
-
-1. **Create a new Space** at [huggingface.co/spaces](https://huggingface.co/spaces)
-2. **Select SDK**: Streamlit
-3. **Upload files:**
-   - `app/main.py`
-   - `model/` folder
-   - `requirements.txt`
-4. **Add a `README.md`** to your Space
-5. **Your app will be live** at `huggingface.co/spaces/youruser/appname`
-
-### Important Notes for Deployment:
-- Ensure model files are uploaded (may require Git LFS for large files)
-- Use `opencv-python-headless` in requirements.txt for server deployments
-- Set appropriate memory limits for video processing
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/AmazingFeature`)
-3. **Commit your changes** (`git commit -m 'Add some AmazingFeature'`)
-4. **Push to the branch** (`git push origin feature/AmazingFeature`)
-5. **Open a Pull Request**
-
-### Areas for Improvement:
-- Add more helmet classes (different types)
-- Implement real-time webcam detection
-- Add database for storing detection logs
-- Create REST API for integration
-- Improve UI/UX design
-
----
-
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -251,16 +166,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 For questions, suggestions, or issues:
 
 - **GitHub Issues**: [Create an issue](https://github.com/yourusername/helmet_detection/issues)
-- **Email**: your.email@example.com
-
----
-
-## 📊 Project Stats
-
-- **Models**: 2 (YOLOv8s, YOLOv11s)
-- **Input Formats**: Images (JPG, PNG) & Videos (MP4, MOV, AVI, MKV)
-- **Framework**: Streamlit
-- **Deployment**: Cloud-ready
+- **Email**: zeel2659@gmail.com
 
 ---
 
