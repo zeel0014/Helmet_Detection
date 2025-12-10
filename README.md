@@ -165,8 +165,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions, suggestions, or issues:
 
-- **GitHub Issues**: [Create an issue](https://github.com/yourusername/helmet_detection/issues)
-- **Email**: zeel2659@gmail.com
+**Developed by**: [@zeel0014](https://github.com/zeel0014)  
+**GitHub Repository**: [Multiple-Disease-Prediction](https://github.com/zeel0014/Multiple-Disease-Prediction)
 
 ---
 
