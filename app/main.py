@@ -79,9 +79,14 @@ else:
                 h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                 total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-                # Try different codecs for compatibility
-                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+                # Use H264 codec for web compatibility
+                fourcc = cv2.VideoWriter_fourcc(*"H264")
                 out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
+                
+                # If H264 fails, try mp4v
+                if not out.isOpened():
+                    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+                    out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
 
                 if not out.isOpened():
                     st.error("Cannot create output video")
@@ -112,17 +117,8 @@ else:
 
             # Check if output file exists and has content
             if os.path.exists(output_video_path) and os.path.getsize(output_video_path) > 0:
-                # Method 1: Direct file display (works best)
+                # Display video
                 st.video(output_video_path)
-                
-                # Method 2: Download button as backup
-                with open(output_video_path, "rb") as file:
-                    st.download_button(
-                        label="📥 Download Processed Video",
-                        data=file,
-                        file_name=f"helmet_detection_{timestamp}.mp4",
-                        mime="video/mp4"
-                    )
             else:
                 st.error("Output video file not created properly")
 
