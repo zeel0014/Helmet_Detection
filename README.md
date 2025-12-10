@@ -61,7 +61,6 @@ This project uses a **public helmet detection dataset** sourced from **[Roboflow
 - **[Streamlit](https://streamlit.io/)** - Web application framework
 - **[Ultralytics YOLO](https://github.com/ultralytics/ultralytics)** - Object detection models (YOLOv8 & YOLOv11)
 - **[OpenCV](https://opencv.org/)** - Computer vision and video processing
-- **[Pillow](https://pillow.readthedocs.io/)** - Image processing
 - **[NumPy](https://numpy.org/)** - Numerical computations
 
 ---
@@ -76,7 +75,7 @@ This project uses a **public helmet detection dataset** sourced from **[Roboflow
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/helmet_detection.git
+git clone https://github.com/zeel0014/Helmet_Detection.git
 cd helmet_detection
 ```
 
@@ -125,32 +124,7 @@ helmet_detection/
    ```bash
    streamlit run app/main.py
    ```
-
-3. **Open your browser:**
-   - The app will automatically open at `http://localhost:8501`
-   - If not, manually navigate to the URL shown in the terminal
-
-### Using the Application
-
-#### Image Detection:
-1. Select **"Image"** from the sidebar
-2. Click **"Upload Image → Auto Detect"**
-3. Choose an image file (JPG, JPEG, PNG)
-4. View the detection results instantly
-
-#### Video Processing:
-1. Select **"Video"** from the sidebar
-2. Click **"Upload Video → Auto Process"**
-3. Choose a video file (MP4, MOV, AVI, MKV)
-4. Wait for processing to complete
-5. View the annotated output video
-
-#### Settings:
-- **Select Model**: Choose between YOLOv8s or YOLOv11s
-- **Confidence Threshold**: Adjust from 0.1 to 1.0 (default: 0.45)
-
----
-
+   
 ## 📁 Project Structure
 
 ```
