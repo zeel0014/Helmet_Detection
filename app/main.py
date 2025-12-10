@@ -1,110 +1,135 @@
-# main.py (Final Updated Version - No Warnings, Cloud Ready)
-
-import streamlit as st
+mport streamlit as st
 from ultralytics import YOLO
+import cv2
 from PIL import Image
+import numpy as np
 import os
 import tempfile
-import shutil
+import base64
 
-st.set_page_config(page_title="Safety Helmet Detection", layout="centered")
-st.title("Safety Helmet Detection System")
-st.markdown("Upload image or video — helmet detection in seconds!")
+st.set_page_config(page_title="Helmet Detection", layout="centered")
+st.title("Helmet Detection System")
 
 # Sidebar
-st.sidebar.header("Configuration")
-model_choice = st.sidebar.selectbox("Select Trained Model", ["YOLOv8s", "YOLOv11s"])
+st.sidebar.header("Settings")
+model_choice = st.sidebar.selectbox("Select Model", ["YOLOv8s", "YOLOv11s"])
+conf_threshold = st.sidebar.slider("Confidence", 0.1, 1.0, 0.45, 0.05)
 
-conf_threshold = st.sidebar.slider("Confidence Threshold", 0.10, 1.0, 0.45, 0.05)
-
-# Tumhare custom model ke naam yahan daal do (repo root mein hone chahiye)
 model_paths = {"YOLOv8s": "model/yolo8s.pt", "YOLOv11s": "model/yolo11s.pt"}
 
+
 @st.cache_resource
-def load_model(choice):
-    path = model_paths[choice]
-    if not os.path.exists(path):
-        st.error(f"Model not found: {path}")
-        st.info("Upload your custom `.pt` file in the repo root.")
-        st.stop()
+def load_model(path):
     return YOLO(path)
 
-model = load_model(model_choice)
-st.sidebar.success(f"Loaded: {model_choice}")
 
-input_type = st.sidebar.radio("Choose Input", ["Image", "Video"], horizontal=True)
+model_path = model_paths[model_choice]
+if not os.path.exists(model_path):
+    st.error(f"Model not found: {model_path}")
+    st.stop()
+
+model = load_model(model_path)
+st.sidebar.success(f"Model Loaded: {model_choice}")
+
+input_type = st.sidebar.radio("Input Type", ["Image", "Video"])
 
 # ============================= IMAGE =============================
 if input_type == "Image":
-    uploaded = st.file_uploader("Upload Image", type=["jpg", "jpg", "jpeg", "png", "webp"])
-
+    uploaded = st.file_uploader(
+        "Upload Image → Auto Detect", type=["jpg", "jpeg", "png"]
+    )
     if uploaded:
-        image = Image.open(uploaded)
-        st.image(image, caption="Original Image", width=700)
-
-        with st.spinner("Detecting helmets..."):
-            # stream=False rakha hai kyunki single image hai → RAM issue nahi hoga
-            results = model(image, conf=conf_threshold, verbose=False)[0]
-            annotated = results.plot()
-
-        st.image(annotated, caption="Detection Result", width=700)
-        st.success("Detection Complete!")
+        with st.spinner("Detecting..."):
+            img = Image.open(uploaded)
+            res = model(np.array(img), conf=conf_threshold, verbose=False)[0]
+            result_img = res.plot()
+            st.image(result_img, caption="Result", width=800)
 
 # ============================= VIDEO =============================
 else:
-    uploaded_video = st.file_uploader("Upload Video (MP4 recommended)", type=["mp4", "mov", "avi", "mkv"])
+    uploaded_video = st.file_uploader(
+        "Upload Video → Auto Process", type=["mp4", "mov", "avi", "mkv"]
+    )
 
-    if uploaded_video:
-        # Save uploaded video temporarily
-        temp_input = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
-        temp_input.write(uploaded_video.read())
-        temp_input.close()
-
-        # Temp folder for YOLO output
-        temp_dir = tempfile.mkdtemp()
+    if uploaded_video is not None:
+        # Create temp directory in system temp
+        temp_dir = tempfile.gettempdir()
+        
+        # Generate unique filenames
+        import time
+        timestamp = str(int(time.time()))
+        input_video_path = os.path.join(temp_dir, f"input_{timestamp}.mp4")
+        output_video_path = os.path.join(temp_dir, f"output_{timestamp}.mp4")
 
         try:
-            with st.spinner("Processing video... sabr rakho, 20–90 sec lagega"):
-                # YOLO ka built-in save — Cloud pe 101% kaam karta hai
-                model.predict(
-                    source=temp_input.name,
-                    conf=conf_threshold,
-                    save=True,
-                    project=temp_dir,
-                    name="output",
-                    exist_ok=True,
-                    stream=False,        # Video ke liye bhi False rakh sakte hain (safe)
-                    verbose=False,
-                    imgsz=640,
-                    device="cpu"
-                )
+            # Save uploaded video
+            with open(input_video_path, "wb") as f:
+                f.write(uploaded_video.read())
 
-            # Output video path find karo
-            output_folder = os.path.join(temp_dir, "output")
-            video_files = [f for f in os.listdir(output_folder) if f.endswith(('.mp4', '.avi', '.mov'))]
+            # Processing
+            with st.spinner("Processing Video... Please wait"):
+                cap = cv2.VideoCapture(input_video_path)
+                
+                if not cap.isOpened():
+                    st.error("Cannot open video file")
+                    st.stop()
+                
+                fps = cap.get(cv2.CAP_PROP_FPS)
+                w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-            if not video_files:
-                st.error("YOLO ne video save nahi kiya. Format issue ho sakta hai.")
-                st.stop()
+                # Use H264 codec for web compatibility
+                fourcc = cv2.VideoWriter_fourcc(*"H264")
+                out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
+                
+                # If H264 fails, try mp4v
+                if not out.isOpened():
+                    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+                    out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
 
-            result_video = os.path.join(output_folder, video_files[0])
+                if not out.isOpened():
+                    st.error("Cannot create output video")
+                    cap.release()
+                    st.stop()
 
-            # Show video
-            with open(result_video, "rb") as f:
-                st.video(f.read())
+                progress = st.progress(0)
+                frame_count = 0
 
-            st.success("Video processed successfully!")
-            st.balloons()
+                while True:
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
+
+                    result = model(frame, conf=conf_threshold, verbose=False)[0]
+                    annotated = result.plot()
+                    out.write(annotated)
+
+                    frame_count += 1
+                    if total > 0:
+                        progress.progress(min(frame_count / total, 1.0))
+
+                cap.release()
+                out.release()
+                progress.empty()
+
+            st.success("✅ Processing complete!")
+
+            # Check if output file exists and has content
+            if os.path.exists(output_video_path) and os.path.getsize(output_video_path) > 0:
+                # Read video as bytes for better compatibility
+                with open(output_video_path, "rb") as video_file:
+                    video_bytes = video_file.read()
+                st.video(video_bytes)
+            else:
+                st.error("Output video file not created properly")
 
         except Exception as e:
-            st.error(f"Error: {str(e)}")
+            st.error(f"❌ Error: {str(e)}")
             import traceback
-            st.code(traceback.format_exc())
-
+            st.text(traceback.format_exc())
+        
         finally:
-            # Cleanup
-            try:
-                os.unlink(temp_input.name)
-                shutil.rmtree(temp_dir, ignore_errors=True)
-            except:
-                pass
+            # Cleanup (but keep files for a bit for st.video to work)
+            # Streamlit will handle cleanup automatically
+            pass
