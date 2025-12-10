@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 import os
 import tempfile
-import base64
+import subprocess  # New import for video conversion
 
 st.set_page_config(page_title="Helmet Detection", layout="centered")
 st.title("Helmet Detection System")
@@ -15,17 +15,17 @@ st.sidebar.header("Settings")
 model_choice = st.sidebar.selectbox("Select Model", ["YOLOv8s", "YOLOv11s"])
 conf_threshold = st.sidebar.slider("Confidence", 0.1, 1.0, 0.45, 0.05)
 
+# Update these paths relative to your project structure
 model_paths = {"YOLOv8s": "model/yolo8s.pt", "YOLOv11s": "model/yolo11s.pt"}
-
 
 @st.cache_resource
 def load_model(path):
     return YOLO(path)
 
-
 model_path = model_paths[model_choice]
 if not os.path.exists(model_path):
     st.error(f"Model not found: {model_path}")
+    st.info("Please make sure model files are in the 'model/' folder.")
     st.stop()
 
 model = load_model(model_path)
@@ -59,7 +59,10 @@ else:
         import time
         timestamp = str(int(time.time()))
         input_video_path = os.path.join(temp_dir, f"input_{timestamp}.mp4")
+        # Intermediate output (OpenCV writes to this)
         output_video_path = os.path.join(temp_dir, f"output_{timestamp}.mp4")
+        # Final output (Converted for Browser)
+        converted_video_path = os.path.join(temp_dir, f"converted_{timestamp}.mp4")
 
         try:
             # Save uploaded video
@@ -79,17 +82,13 @@ else:
                 h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                 total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-                # Use H264 codec for web compatibility
-                fourcc = cv2.VideoWriter_fourcc(*"H264")
+                # LINUX/CLOUD FIX: Use 'mp4v' instead of 'H264' for OpenCV writing
+                # This avoids the "Encoder not found" error
+                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
                 out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
-                
-                # If H264 fails, try mp4v
-                if not out.isOpened():
-                    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-                    out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
 
                 if not out.isOpened():
-                    st.error("Cannot create output video")
+                    st.error("Cannot create output video writer. Check permissions/codecs.")
                     cap.release()
                     st.stop()
 
@@ -101,6 +100,7 @@ else:
                     if not ret:
                         break
 
+                    # YOLO Detection
                     result = model(frame, conf=conf_threshold, verbose=False)[0]
                     annotated = result.plot()
                     out.write(annotated)
@@ -113,23 +113,36 @@ else:
                 out.release()
                 progress.empty()
 
-            st.success("✅ Processing complete!")
+            # ================= CONVERSION STEP =================
+            # OpenCV's mp4v often shows black screen in browsers.
+            # We use FFmpeg to convert it to H.264 (libx264) for web compatibility.
+            
+            st.info("Optimizing video for web playback...")
+            
+            # FFmpeg command: Input -> output_video_path, Output -> converted_video_path
+            # -y overwrites file, -c:v libx264 uses H.264 codec, -preset fast speeds it up
+            convert_cmd = f"ffmpeg -y -i {output_video_path} -c:v libx264 -preset fast {converted_video_path}"
+            
+            conversion_status = subprocess.call(convert_cmd, shell=True)
+            
+            final_video_path = None
+            
+            if conversion_status == 0 and os.path.exists(converted_video_path):
+                final_video_path = converted_video_path
+            elif os.path.exists(output_video_path):
+                st.warning("Video conversion failed. Showing original output (might not play in some browsers).")
+                final_video_path = output_video_path
+            else:
+                st.error("Failed to generate video.")
 
-            # Check if output file exists and has content
-            if os.path.exists(output_video_path) and os.path.getsize(output_video_path) > 0:
-                # Read video as bytes for better compatibility
-                with open(output_video_path, "rb") as video_file:
+            # Display Video
+            if final_video_path:
+                st.success("✅ Processing complete!")
+                with open(final_video_path, "rb") as video_file:
                     video_bytes = video_file.read()
                 st.video(video_bytes)
-            else:
-                st.error("Output video file not created properly")
 
         except Exception as e:
             st.error(f"❌ Error: {str(e)}")
             import traceback
             st.text(traceback.format_exc())
-        
-        finally:
-            # Cleanup (but keep files for a bit for st.video to work)
-            # Streamlit will handle cleanup automatically
-            pass
