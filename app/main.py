@@ -5,6 +5,7 @@ from PIL import Image
 import numpy as np
 import os
 import tempfile
+import base64
 
 st.set_page_config(page_title="Helmet Detection", layout="centered")
 st.title("Helmet Detection System")
@@ -51,29 +52,44 @@ else:
     )
 
     if uploaded_video is not None:
-        # Use tempfile for cloud compatibility
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_input:
-            tmp_input.write(uploaded_video.read())
-            input_video_path = tmp_input.name
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_output:
-            output_video_path = tmp_output.name
+        # Create temp directory in system temp
+        temp_dir = tempfile.gettempdir()
+        
+        # Generate unique filenames
+        import time
+        timestamp = str(int(time.time()))
+        input_video_path = os.path.join(temp_dir, f"input_{timestamp}.mp4")
+        output_video_path = os.path.join(temp_dir, f"output_{timestamp}.mp4")
 
         try:
+            # Save uploaded video
+            with open(input_video_path, "wb") as f:
+                f.write(uploaded_video.read())
+
             # Processing
-            with st.spinner("Processing Video..."):
+            with st.spinner("Processing Video... Please wait"):
                 cap = cv2.VideoCapture(input_video_path)
+                
+                if not cap.isOpened():
+                    st.error("Cannot open video file")
+                    st.stop()
+                
                 fps = cap.get(cv2.CAP_PROP_FPS)
                 w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
                 h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-                # Use mp4v codec for better compatibility
+                # Try different codecs for compatibility
                 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
                 out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
 
-                total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                if not out.isOpened():
+                    st.error("Cannot create output video")
+                    cap.release()
+                    st.stop()
+
                 progress = st.progress(0)
-                i = 0
+                frame_count = 0
 
                 while True:
                     ret, frame = cap.read()
@@ -84,30 +100,38 @@ else:
                     annotated = result.plot()
                     out.write(annotated)
 
-                    i += 1
+                    frame_count += 1
                     if total > 0:
-                        progress.progress(i / total)
+                        progress.progress(min(frame_count / total, 1.0))
 
                 cap.release()
                 out.release()
+                progress.empty()
 
-            progress.empty()
-            st.success("Processing complete!")
+            st.success("✅ Processing complete!")
 
-            # Read the output video as bytes and display
-            with open(output_video_path, 'rb') as video_file:
-                video_bytes = video_file.read()
-                st.video(video_bytes)
+            # Check if output file exists and has content
+            if os.path.exists(output_video_path) and os.path.getsize(output_video_path) > 0:
+                # Method 1: Direct file display (works best)
+                st.video(output_video_path)
+                
+                # Method 2: Download button as backup
+                with open(output_video_path, "rb") as file:
+                    st.download_button(
+                        label="📥 Download Processed Video",
+                        data=file,
+                        file_name=f"helmet_detection_{timestamp}.mp4",
+                        mime="video/mp4"
+                    )
+            else:
+                st.error("Output video file not created properly")
 
         except Exception as e:
-            st.error(f"Error processing video: {str(e)}")
+            st.error(f"❌ Error: {str(e)}")
+            import traceback
+            st.text(traceback.format_exc())
         
         finally:
-            # Cleanup temporary files
-            try:
-                if os.path.exists(input_video_path):
-                    os.remove(input_video_path)
-                if os.path.exists(output_video_path):
-                    os.remove(output_video_path)
-            except:
-                pass
+            # Cleanup (but keep files for a bit for st.video to work)
+            # Streamlit will handle cleanup automatically
+            pass
