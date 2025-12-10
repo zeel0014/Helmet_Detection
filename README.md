@@ -20,20 +20,22 @@ A real-time helmet detection system powered by YOLOv8 and YOLOv11, built with St
 
 ## 🎯 Overview
 
-This **Helmet Detection System** uses state-of-the-art YOLO (You Only Look Once) object detection models to identify whether people are wearing helmets in images and videos. The system provides a user-friendly web interface built with Streamlit, making it accessible for both technical and non-technical users.
+This **Helmet Detection System** uses state-of-the-art YOLO (You Only Look Once) object detection models to identify whether people are wearing helmets in images and videos. The system features **real-time object tracking** for continuous detection across video frames, ensuring consistent identification of individuals throughout the footage. The system provides a user-friendly web interface built with Streamlit, making it accessible for both technical and non-technical users.
 
 ---
 
 ## ✨ Features
 
 - **Real-time Detection**: Process images and videos with instant results
+- **Object Tracking**: Continuous tracking of detected objects across video frames using advanced tracking algorithms
+- **Dual Tracker Support**: Choose between ByteTrack and BotSORT tracking algorithms
 - **Dual Model Support**: Choose between YOLOv8s and YOLOv11s models
 - **Adjustable Confidence**: Fine-tune detection sensitivity with a slider
 - **Progress Tracking**: Real-time progress bar for video processing
 - **Clean UI**: Intuitive Streamlit interface
 - **Video Processing**: Upload and process entire videos with annotated output
 - **Image Detection**: Quick single-image helmet detection
-- **Auto-save Results**: Processed videos are automatically saved and displayed
+- **Optimized Output**: Automatic video conversion for web playback compatibility
 
 ---
 
@@ -56,6 +58,8 @@ This project uses a **public helmet detection dataset** sourced from **[Roboflow
 - **[Python](https://www.python.org/)** - Core programming language
 - **[Streamlit](https://streamlit.io/)** - Web application framework
 - **[Ultralytics YOLO](https://github.com/ultralytics/ultralytics)** - Object detection models (YOLOv8 & YOLOv11)
+- **[ByteTrack](https://github.com/ifzhang/ByteTrack)** - Multi-object tracking algorithm
+- **[BotSORT](https://github.com/NirAharon/BoT-SORT)** - Robust multi-object tracking with ReID
 - **[OpenCV](https://opencv.org/)** - Computer vision and video processing
 - **[NumPy](https://numpy.org/)** - Numerical computations
 
