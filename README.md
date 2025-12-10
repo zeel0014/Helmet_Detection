@@ -2,7 +2,7 @@
 
 https://github.com/user-attachments/assets/f6e513c3-1b05-4d68-8c83-8eaf61f1fbb6
 
-A real-time helmet detection system powered by YOLOv8 and YOLOv11, built with Streamlit for easy deployment and usage.
+This Helmet Detection System uses YOLOv8 and YOLOv11 models with object tracking, deployed via a user-friendly Streamlit interface to identify helmet usage in images and videos.
 ---
 
 ## 📋 Table of Contents
