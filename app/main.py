@@ -8,7 +8,7 @@ import tempfile
 import subprocess
 
 st.set_page_config(page_title="Helmet Detection", layout="centered")
-st.title("Helmet Detection System (with Tracking)")
+st.title("Helmet Detection System ")
 
 # Sidebar
 st.sidebar.header("Settings")
@@ -66,7 +66,7 @@ else:
             with open(input_video_path, "wb") as f:
                 f.write(uploaded_video.read())
 
-            with st.spinner("Processing Video with Tracking..."):
+            with st.spinner("Processing Video ..."):
                 cap = cv2.VideoCapture(input_video_path)
                 
                 if not cap.isOpened():
@@ -125,7 +125,7 @@ else:
             
             final_video_path = converted_video_path if os.path.exists(converted_video_path) else output_video_path
             
-            st.success("✅ Tracking & Processing complete!")
+            st.success("✅ Processing complete!")
             with open(final_video_path, "rb") as video_file:
                 video_bytes = video_file.read()
             st.video(video_bytes)
