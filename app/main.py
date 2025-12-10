@@ -1,102 +1,110 @@
+# main.py (Final Updated Version - No Warnings, Cloud Ready)
+
 import streamlit as st
 from ultralytics import YOLO
-import cv2
 from PIL import Image
-import numpy as np
 import os
 import tempfile
-import base64
+import shutil
 
-st.set_page_config(page_title="Helmet Detection", layout="centered")
-st.title("Helmet Detection System")
+st.set_page_config(page_title="Safety Helmet Detection", layout="centered")
+st.title("Safety Helmet Detection System")
+st.markdown("Upload image or video — helmet detection in seconds!")
 
 # Sidebar
-st.sidebar.header("Settings")
-model_choice = st.sidebar.selectbox("Select Model", ["YOLOv8s", "YOLOv11s"])
-conf_threshold = st.sidebar.slider("Confidence", 0.1, 1.0, 0.45, 0.05)
+st.sidebar.header("Configuration")
+model_choice = st.sidebar.selectbox("Select Trained Model", ["YOLOv8s", "YOLOv11s"])
 
+conf_threshold = st.sidebar.slider("Confidence Threshold", 0.10, 1.0, 0.45, 0.05)
+
+# Tumhare custom model ke naam yahan daal do (repo root mein hone chahiye)
 model_paths = {"YOLOv8s": "model/yolo8s.pt", "YOLOv11s": "model/yolo11s.pt"}
 
-
 @st.cache_resource
-def load_model(path):
+def load_model(choice):
+    path = model_paths[choice]
+    if not os.path.exists(path):
+        st.error(f"Model not found: {path}")
+        st.info("Upload your custom `.pt` file in the repo root.")
+        st.stop()
     return YOLO(path)
 
+model = load_model(model_choice)
+st.sidebar.success(f"Loaded: {model_choice}")
 
-model_path = model_paths[model_choice]
-if not os.path.exists(model_path):
-    st.error(f"Model not found: {model_path}")
-    st.stop()
-
-model = load_model(model_path)
-st.sidebar.success(f"Model Loaded: {model_choice}")
-
-input_type = st.sidebar.radio("Input Type", ["Image", "Video"])
+input_type = st.sidebar.radio("Choose Input", ["Image", "Video"], horizontal=True)
 
 # ============================= IMAGE =============================
 if input_type == "Image":
-    uploaded = st.file_uploader(
-        "Upload Image → Auto Detect", type=["jpg", "jpeg", "png"]
-    )
+    uploaded = st.file_uploader("Upload Image", type=["jpg", "jpg", "jpeg", "png", "webp"])
+
     if uploaded:
-        with st.spinner("Detecting..."):
-            img = Image.open(uploaded)
-            res = model(np.array(img), conf=conf_threshold, verbose=False)[0]
-            result_img = res.plot()
-            st.image(result_img, caption="Result", width=800)
+        image = Image.open(uploaded)
+        st.image(image, caption="Original Image", width=700)
+
+        with st.spinner("Detecting helmets..."):
+            # stream=False rakha hai kyunki single image hai → RAM issue nahi hoga
+            results = model(image, conf=conf_threshold, verbose=False)[0]
+            annotated = results.plot()
+
+        st.image(annotated, caption="Detection Result", width=700)
+        st.success("Detection Complete!")
 
 # ============================= VIDEO =============================
 else:
-    uploaded_video = st.file_uploader(
-        "Upload Video → Auto Process", type=["mp4", "mov", "avi", "mkv"]
-    )
+    uploaded_video = st.file_uploader("Upload Video (MP4 recommended)", type=["mp4", "mov", "avi", "mkv"])
 
-    if uploaded_video is not None:
-        # Save uploaded video
-        tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
-        tfile.write(uploaded_video.read())
-        input_path = tfile.name
+    if uploaded_video:
+        # Save uploaded video temporarily
+        temp_input = tempfile.NamedTemporaryFile(delete=False, suffix=".mp4")
+        temp_input.write(uploaded_video.read())
+        temp_input.close()
 
-        output_path = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4').name
+        # Temp folder for YOLO output
+        temp_dir = tempfile.mkdtemp()
 
         try:
-            with st.spinner("Processing Video... This may take a while"):
-                # Use YOLO's built-in predict with stream=True and save=True
-                # Yeh direct annotated video save kar deta hai without manual VideoWriter!
+            with st.spinner("Processing video... sabr rakho, 20–90 sec lagega"):
+                # YOLO ka built-in save — Cloud pe 101% kaam karta hai
                 model.predict(
-                    source=input_path,
+                    source=temp_input.name,
                     conf=conf_threshold,
                     save=True,
-                    project=tempfile.gettempdir(),
-                    name="prediction",
+                    project=temp_dir,
+                    name="output",
                     exist_ok=True,
-                    stream=False,
-                    verbose=False
+                    stream=False,        # Video ke liye bhi False rakh sakte hain (safe)
+                    verbose=False,
+                    imgsz=640,
+                    device="cpu"
                 )
 
-                # Find the output video (YOLO saves it as exp.mp4, exp0.mp4, etc.)
-                pred_dir = os.path.join(tempfile.gettempdir(), "prediction")
-                video_files = [f for f in os.listdir(pred_dir) if f.endswith(".mp4")]
-                if not video_files:
-                    st.error("No output video generated by YOLO")
-                    st.stop()
+            # Output video path find karo
+            output_folder = os.path.join(temp_dir, "output")
+            video_files = [f for f in os.listdir(output_folder) if f.endswith(('.mp4', '.avi', '.mov'))]
 
-                latest_video = max([os.path.join(pred_dir, f) for f in video_files], key=os.path.getctime)
+            if not video_files:
+                st.error("YOLO ne video save nahi kiya. Format issue ho sakta hai.")
+                st.stop()
 
-                # Show the video
-                with open(latest_video, "rb") as f:
-                    st.video(f.read())
-                st.success("Detection Complete!")
+            result_video = os.path.join(output_folder, video_files[0])
+
+            # Show video
+            with open(result_video, "rb") as f:
+                st.video(f.read())
+
+            st.success("Video processed successfully!")
+            st.balloons()
 
         except Exception as e:
             st.error(f"Error: {str(e)}")
             import traceback
             st.code(traceback.format_exc())
+
         finally:
             # Cleanup
             try:
-                os.unlink(input_path)
-                if 'latest_video' in locals():
-                    os.unlink(latest_video)
+                os.unlink(temp_input.name)
+                shutil.rmtree(temp_dir, ignore_errors=True)
             except:
                 pass
