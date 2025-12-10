@@ -9,15 +9,11 @@ A real-time helmet detection system powered by YOLOv8 and YOLOv11, built with St
 
 - [Overview](#overview)
 - [Features](#features)
-- [Demo](#demo)
-- [Dataset & Training](#dataset--training)
+- [Dataset](#dataset--training)
 - [Technologies Used](#technologies-used)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
-- [Model Information](#model-information)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
 - [License](#license)
 
 ---
@@ -41,7 +37,7 @@ This **Helmet Detection System** uses state-of-the-art YOLO (You Only Look Once)
 
 ---
 
-## 📊 Dataset & Training
+## 📊 Dataset
 
 ### Dataset Source
 
@@ -167,7 +163,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 ---
 
 **Developed by**: [@zeel0014](https://github.com/zeel0014)  
-**GitHub Repository**: [Multiple-Disease-Prediction](https://github.com/zeel0014/Helmet_Detection)  
+**GitHub Repository**: [Helmet Detection](https://github.com/zeel0014/Helmet_Detection)  
 **Live Demo**: [Hugging Face Space](https://huggingface.co/spaces/zeel0014/Multiple_Disease_Prediction)
 
 ---
