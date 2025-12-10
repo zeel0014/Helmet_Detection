@@ -167,6 +167,7 @@ For questions, suggestions, or issues:
 
 **Developed by**: [@zeel0014](https://github.com/zeel0014)  
 **GitHub Repository**: [Multiple-Disease-Prediction](https://github.com/zeel0014/Multiple-Disease-Prediction)
+- **Email**: zeel2659@gmail.com
 
 ---
 
