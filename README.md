@@ -41,18 +41,6 @@ This **Helmet Detection System** uses state-of-the-art YOLO (You Only Look Once)
 
 ---
 
-## 🎬 Demo
-
-### Image Detection
-Upload an image → Get instant helmet detection results with bounding boxes
-
-### Video Processing
-1. Upload a video file (MP4, MOV, AVI, MKV)
-2. Watch real-time processing progress
-3. View the annotated output video with detected helmets
-
----
-
 ## 📊 Dataset & Training
 
 ### Dataset Source
