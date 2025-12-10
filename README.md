@@ -1,6 +1,6 @@
 # 🛡️ Helmet Detection System
 
-<img width="1615" height="700" alt="Capture" src="https://github.com/user-attachments/assets/6375747e-1fb4-427f-9f28-858fc42ff1b4" />
+https://github.com/user-attachments/assets/f6e513c3-1b05-4d68-8c83-8eaf61f1fbb6
 
 A real-time helmet detection system powered by YOLOv8 and YOLOv11, built with Streamlit for easy deployment and usage.
 ---
