@@ -5,17 +5,19 @@ from PIL import Image
 import numpy as np
 import os
 import tempfile
-import subprocess  # New import for video conversion
+import subprocess
 
 st.set_page_config(page_title="Helmet Detection", layout="centered")
-st.title("Helmet Detection System")
+st.title("Helmet Detection System (with Tracking)")
 
 # Sidebar
 st.sidebar.header("Settings")
 model_choice = st.sidebar.selectbox("Select Model", ["YOLOv8s", "YOLOv11s"])
 conf_threshold = st.sidebar.slider("Confidence", 0.1, 1.0, 0.45, 0.05)
 
-# Update these paths relative to your project structure
+# Tracker selection (Optional: User can choose tracker)
+tracker_type = st.sidebar.radio("Tracker Type", ["bytetrack.yaml", "botsort.yaml"], index=0)
+
 model_paths = {"YOLOv8s": "model/yolo8s.pt", "YOLOv11s": "model/yolo11s.pt"}
 
 @st.cache_resource
@@ -25,7 +27,6 @@ def load_model(path):
 model_path = model_paths[model_choice]
 if not os.path.exists(model_path):
     st.error(f"Model not found: {model_path}")
-    st.info("Please make sure model files are in the 'model/' folder.")
     st.stop()
 
 model = load_model(model_path)
@@ -41,6 +42,7 @@ if input_type == "Image":
     if uploaded:
         with st.spinner("Detecting..."):
             img = Image.open(uploaded)
+            # Image me tracking ki jarurat nahi hoti, simple predict
             res = model(np.array(img), conf=conf_threshold, verbose=False)[0]
             result_img = res.plot()
             st.image(result_img, caption="Result", width=800)
@@ -52,25 +54,19 @@ else:
     )
 
     if uploaded_video is not None:
-        # Create temp directory in system temp
         temp_dir = tempfile.gettempdir()
         
-        # Generate unique filenames
         import time
         timestamp = str(int(time.time()))
         input_video_path = os.path.join(temp_dir, f"input_{timestamp}.mp4")
-        # Intermediate output (OpenCV writes to this)
         output_video_path = os.path.join(temp_dir, f"output_{timestamp}.mp4")
-        # Final output (Converted for Browser)
         converted_video_path = os.path.join(temp_dir, f"converted_{timestamp}.mp4")
 
         try:
-            # Save uploaded video
             with open(input_video_path, "wb") as f:
                 f.write(uploaded_video.read())
 
-            # Processing
-            with st.spinner("Processing Video... Please wait"):
+            with st.spinner("Processing Video with Tracking..."):
                 cap = cv2.VideoCapture(input_video_path)
                 
                 if not cap.isOpened():
@@ -82,13 +78,11 @@ else:
                 h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                 total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-                # LINUX/CLOUD FIX: Use 'mp4v' instead of 'H264' for OpenCV writing
-                # This avoids the "Encoder not found" error
                 fourcc = cv2.VideoWriter_fourcc(*"mp4v")
                 out = cv2.VideoWriter(output_video_path, fourcc, fps, (w, h))
 
                 if not out.isOpened():
-                    st.error("Cannot create output video writer. Check permissions/codecs.")
+                    st.error("Cannot create output video writer")
                     cap.release()
                     st.stop()
 
@@ -100,8 +94,19 @@ else:
                     if not ret:
                         break
 
-                    # YOLO Detection
-                    result = model(frame, conf=conf_threshold, verbose=False)[0]
+                    # ====================================================
+                    # CHANGE IS HERE: Using model.track() instead of model()
+                    # persist=True : Object ko yaad rakhne ke liye (Tracking)
+                    # tracker=tracker_type : bytetrack ya botsort use karega
+                    # ====================================================
+                    result = model.track(
+                        frame, 
+                        persist=True, 
+                        conf=conf_threshold, 
+                        tracker=tracker_type,
+                        verbose=False
+                    )[0]
+                    
                     annotated = result.plot()
                     out.write(annotated)
 
@@ -113,34 +118,17 @@ else:
                 out.release()
                 progress.empty()
 
-            # ================= CONVERSION STEP =================
-            # OpenCV's mp4v often shows black screen in browsers.
-            # We use FFmpeg to convert it to H.264 (libx264) for web compatibility.
-            
+            # ================= CONVERSION STEP (Same as before) =================
             st.info("Optimizing video for web playback...")
-            
-            # FFmpeg command: Input -> output_video_path, Output -> converted_video_path
-            # -y overwrites file, -c:v libx264 uses H.264 codec, -preset fast speeds it up
             convert_cmd = f"ffmpeg -y -i {output_video_path} -c:v libx264 -preset fast {converted_video_path}"
+            subprocess.call(convert_cmd, shell=True)
             
-            conversion_status = subprocess.call(convert_cmd, shell=True)
+            final_video_path = converted_video_path if os.path.exists(converted_video_path) else output_video_path
             
-            final_video_path = None
-            
-            if conversion_status == 0 and os.path.exists(converted_video_path):
-                final_video_path = converted_video_path
-            elif os.path.exists(output_video_path):
-                st.warning("Video conversion failed. Showing original output (might not play in some browsers).")
-                final_video_path = output_video_path
-            else:
-                st.error("Failed to generate video.")
-
-            # Display Video
-            if final_video_path:
-                st.success("✅ Processing complete!")
-                with open(final_video_path, "rb") as video_file:
-                    video_bytes = video_file.read()
-                st.video(video_bytes)
+            st.success("✅ Tracking & Processing complete!")
+            with open(final_video_path, "rb") as video_file:
+                video_bytes = video_file.read()
+            st.video(video_bytes)
 
         except Exception as e:
             st.error(f"❌ Error: {str(e)}")
