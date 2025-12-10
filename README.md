@@ -10,7 +10,7 @@ A real-time helmet detection system powered by YOLOv8 and YOLOv11, built with St
 - [Overview](#-overview)
 - [Features](#-features)
 - [Dataset](#-dataset)
-- [Technologies Used](#technologies-used)
+- [Technologies Used](#️-technologies-used)
 - [Installation](#-installation)
 - [Usage](#-usage)
 - [Project Structure](#-project-structure)
