@@ -1,12 +1,8 @@
 # 🛡️ Helmet Detection System
 
+<img width="1615" height="700" alt="Capture" src="https://github.com/user-attachments/assets/6375747e-1fb4-427f-9f28-858fc42ff1b4" />
+
 A real-time helmet detection system powered by YOLOv8 and YOLOv11, built with Streamlit for easy deployment and usage.
-
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)
-![YOLO](https://img.shields.io/badge/YOLO-v8%20%7C%20v11-green.svg)
-![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-
 ---
 
 ## 📋 Table of Contents
